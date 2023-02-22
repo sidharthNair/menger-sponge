@@ -1,7 +1,7 @@
 import { Camera } from "../lib/webglutils/Camera.js";
 import { CanvasAnimation } from "../lib/webglutils/CanvasAnimation.js";
 import { MengerSponge } from "./MengerSponge.js";
-import { Mat4, Vec3 } from "../lib/TSM.js";
+import { Mat4, Vec3, Vec4 } from "../lib/TSM.js";
 
 /**
  * Might be useful for designing any animation GUI
@@ -128,6 +128,38 @@ export class GUI implements IGUI {
     public drag(mouse: MouseEvent): void {
 
         // TODO: Your code here for left and right mouse drag
+        if (this.dragging) {
+            // Calculate deltas and update state
+
+            if (mouse.screenX == this.prevX && mouse.screenY == this.prevY) {
+                // Mouse held, but no mouse movement
+                return;
+            }
+
+            let dX = mouse.screenX - this.prevX;
+            let dY = mouse.screenY - this.prevY;
+            this.prevX = mouse.screenX;
+            this.prevY = mouse.screenY;
+
+            // Construct View Matrix
+            let tangent = this.camera.right();
+            let up = this.camera.up();
+            let neg_look = this.camera.forward();
+            let eye = this.camera.pos();
+            // Mat4 filled in column major order
+            let V: Mat4 = new Mat4([tangent.x, tangent.y, tangent.z, 0.0,
+                                    up.x, up.y, up.z, 0.0,
+                                    neg_look.x, neg_look.y, neg_look.z, 0.0,
+                                    eye.x, eye.y, eye.z, 1.0]);
+
+            // Drag vector v in world coordinates
+            let v: Vec4 = new Vec4([-dX, dY, this.camera.distance(), 0.0]);
+            let transformed = V.multiplyVec4(v);
+
+            // Axis is perpendicular to look direction and transformed drag vector
+            let axis = Vec3.cross(this.camera.forward(), new Vec3([transformed.x, transformed.y, transformed.z]));
+            this.camera.rotate(axis, GUI.rotationSpeed);
+        }
 
     }
 
@@ -158,39 +190,39 @@ export class GUI implements IGUI {
 
         switch (key.code) {
             case "KeyW": {
-
+                this.camera.offset(this.camera.forward().negate(), GUI.zoomSpeed, true);
                 break;
             }
             case "KeyA": {
-
+                this.camera.offset(this.camera.right().negate(), GUI.zoomSpeed, true);
                 break;
             }
             case "KeyS": {
-
+                this.camera.offset(this.camera.forward(), GUI.zoomSpeed, true);
                 break;
             }
             case "KeyD": {
-
+                this.camera.offset(this.camera.right(), GUI.zoomSpeed, true);
                 break;
             }
             case "KeyR": {
-
+                this.reset();
                 break;
             }
             case "ArrowLeft": {
-
+                this.camera.roll(GUI.rollSpeed, false);
                 break;
             }
             case "ArrowRight": {
-
+                this.camera.roll(GUI.rollSpeed, true);
                 break;
             }
             case "ArrowUp": {
-
+                this.camera.offset(this.camera.up(), GUI.zoomSpeed, true);
                 break;
             }
             case "ArrowDown": {
-
+                this.camera.offset(this.camera.up().negate(), GUI.zoomSpeed, true);
                 break;
             }
             case "Digit1": {
