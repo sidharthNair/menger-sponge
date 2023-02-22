@@ -73,11 +73,11 @@ export class MengerSponge implements IMengerSponge {
             min.x + size, min.y + size, min.z, 1.0,
 
             // Top Face
-            min.x + size, min.y, min.z, 1.0,
+            min.x, min.y, min.z + size, 1.0,
             min.x + size, min.y, min.z + size, 1.0,
             min.x + size, min.y + size, min.z + size, 1.0,
 
-            min.x + size, min.y, min.z, 1.0,
+            min.x, min.y, min.z + size, 1.0,
             min.x + size, min.y + size, min.z + size, 1.0,
             min.x, min.y + size, min.z + size, 1.0,
 
@@ -136,7 +136,7 @@ export class MengerSponge implements IMengerSponge {
                 }
             }
 
-            for (let i = 0; i < 36; i++) {
+            for (let i = 0; i < cube.length / 4; i++) {
                 this.indices.push(this.indices.length);
             }
         }
